@@ -121,9 +121,9 @@ module DecisionTree
        return (@type == :discrete ? descend_discrete(@tree, test) : descend_continuous(@tree, test))
     end
 
-    def graph(filename) 
+    def graph(filename, format='png') 
       dgp = DotGraphPrinter.new(build_tree)
-      dgp.write_to_file("#{filename}.png", "png")
+      dgp.write_to_file("#{filename}.#{format}", "#{format}")
     end
 
     def ruleset
