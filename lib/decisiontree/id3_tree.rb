@@ -15,9 +15,9 @@ class Object
   end
 end
 
-class Array 
-  def classification; collect { |v| v.last }; end 
-    
+class Array
+  def classification; collect { |v| v.last }; end
+
   # calculate information entropy
   def entropy
     return 0 if empty?
@@ -47,19 +47,19 @@ module DecisionTree
       initialize(attributes, data, default, @type)
 
       # Remove samples with same attributes leaving most common classification
-      data2 = data.inject({}) {|hash, d| hash[d.slice(0..-2)] ||= Hash.new(0); hash[d.slice(0..-2)][d.last] += 1; hash }.map{|key,val| key + [val.sort_by{ |k, v| v }.last.first]}
+      data2 = data.uniq
 
       @tree = id3_train(data2, attributes, default)
     end
-    
+
     def id3_train(data, attributes, default, used={})
-      # Choose a fitness algorithm   
+      # Choose a fitness algorithm
       case @type
-        when :discrete; fitness = proc{|a,b,c| id3_discrete(a,b,c)} 
+        when :discrete; fitness = proc{|a,b,c| id3_discrete(a,b,c)}
         when :continuous; fitness = proc{|a,b,c| id3_continuous(a,b,c)}
       end
-      
-      return default if data.empty?                                               
+
+      return default if data.empty?
 
       # return classification if all examples have the same classification
       return data.first.last if data.classification.uniq.size == 1
@@ -69,9 +69,9 @@ module DecisionTree
       max = performance.max { |a,b| a[0] <=> b[0] }
       best = Node.new(attributes[performance.index(max)], max[1], max[0])
       best.threshold = nil if @type == :discrete
-      @used.has_key?(best.attribute) ? @used[best.attribute] += [best.threshold] : @used[best.attribute] = [best.threshold]  
+      @used.has_key?(best.attribute) ? @used[best.attribute] += [best.threshold] : @used[best.attribute] = [best.threshold]
       tree, l = {best => {}}, ['>=', '<']
-      
+
       case @type
         when :continuous
           data.partition { |d| d[attributes.index(best.attribute)] >= best.threshold }.each_with_index  { |examples, i|
@@ -82,7 +82,7 @@ module DecisionTree
           partitions = values.collect { |val| data.select { |d| d[attributes.index(best.attribute)] == val } }
           partitions.each_with_index  { |examples, i|
             tree[best][values[i]] = id3_train(examples, attributes-[values[i]], (data.classification.mode rescue 0), &fitness)
-          }  
+          }
         end
 
       tree
@@ -96,24 +96,24 @@ module DecisionTree
       thresholds.pop
       #thresholds -= used[attribute] if used.has_key? attribute
 
-      gain = thresholds.collect { |threshold|   
+      gain = thresholds.collect { |threshold|
         sp = data.partition { |d| d[attributes.index(attribute)] >= threshold }
         pos = (sp[0].size).to_f / data.size
         neg = (sp[1].size).to_f / data.size
-       
+
         [data.classification.entropy - pos*sp[0].classification.entropy - neg*sp[1].classification.entropy, threshold]
       }.max { |a,b| a[0] <=> b[0] }
 
       return [-1, -1] if gain.size == 0
       gain
     end
-    
+
     # ID3 for discrete label cases
     def id3_discrete(data, attributes, attribute)
       values = data.collect { |d| d[attributes.index(attribute)] }.uniq.sort
       partitions = values.collect { |val| data.select { |d| d[attributes.index(attribute)] == val } }
       remainder = partitions.collect {|p| (p.size.to_f / data.size) * p.classification.entropy}.inject(0) {|i,s| s+=i }
-      
+
       [data.classification.entropy - remainder, attributes.index(attribute)]
     end
 
@@ -121,7 +121,7 @@ module DecisionTree
        return (@type == :discrete ? descend_discrete(@tree, test) : descend_continuous(@tree, test))
     end
 
-    def graph(filename, format='png') 
+    def graph(filename, format='png')
       dgp = DotGraphPrinter.new(build_tree)
       dgp.write_to_file("#{filename}.#{format}", "#{format}")
     end
@@ -157,16 +157,17 @@ module DecisionTree
       return attr[1]['>='] if !attr[1]['>='].is_a?(Hash) and test[@attributes.index(attr.first.attribute)] >= attr.first.threshold
       return attr[1]['<'] if !attr[1]['<'].is_a?(Hash) and test[@attributes.index(attr.first.attribute)] < attr.first.threshold
       return descend_continuous(attr[1]['>='],test) if test[@attributes.index(attr.first.attribute)] >= attr.first.threshold
-      return descend_continuous(attr[1]['<'],test) if test[@attributes.index(attr.first.attribute)] < attr.first.threshold 
-    end 
-    
+      return descend_continuous(attr[1]['<'],test) if test[@attributes.index(attr.first.attribute)] < attr.first.threshold
+    end
+
     def descend_discrete(tree, test)
       attr = tree.to_a.first
       return @default if !attr
+      puts "!!! => #{attr.inspect}"
       return attr[1][test[@attributes.index(attr[0].attribute)]] if !attr[1][test[@attributes.index(attr[0].attribute)]].is_a?(Hash)
       return descend_discrete(attr[1][test[@attributes.index(attr[0].attribute)]],test)
     end
-    
+
     def build_tree(tree = @tree)
       return [] unless tree.is_a?(Hash)
       return [["Always", @default]] if tree.empty?
@@ -282,7 +283,7 @@ module DecisionTree
 
     def predict(test)
       @rules.each do |r|
-        prediction = r.predict(test) 
+        prediction = r.predict(test)
         return prediction, r.accuracy unless prediction.nil?
       end
       return @default, 0.0
