@@ -47,7 +47,7 @@ module DecisionTree
       initialize(attributes, data, default, @type)
 
       # Remove samples with same attributes leaving most common classification
-      data2 = data.inject({}) {|hash, d| hash[d.slice(0..-2)] ||= Hash.new(0); hash[d.slice(0..-2)][d.last] += 1; hash }.map{|key,val| key + [val.sort_by{ |k, v| v }.last.first]}
+      data2 = data.inject({}) {|hash, d| hash[d.slice(0..-2)] ||= Hash.new(0); hash[d.slice(0..-2)][d.last] += 1; hash }.map{|key,val| key + [val.sort_by{ |k, v| v }.first.first]}
 
       @tree = id3_train(data2, attributes, default)
     end
