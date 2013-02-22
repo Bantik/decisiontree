@@ -163,7 +163,6 @@ module DecisionTree
     def descend_discrete(tree, test)
       attr = tree.to_a.first
       return @default if !attr
-      puts "!!! => #{attr.inspect}"
       return attr[1][test[@attributes.index(attr[0].attribute)]] if !attr[1][test[@attributes.index(attr[0].attribute)]].is_a?(Hash)
       return descend_discrete(attr[1][test[@attributes.index(attr[0].attribute)]],test)
     end
