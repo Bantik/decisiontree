@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "tc_decisiontree"
-  s.version = "1.0.1"
+  s.version = "1.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ilya Grigorik", "Corey Ehmke"]
-  s.date = "2013-02-21"
+  s.date = "2013-02-22"
   s.description = "Trunkclub modification of Ilya's ID3-based implementation of the M.L. Decision Tree algorithm"
   s.email = "corey@trunkclub.com"
   s.extra_rdoc_files = [
@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
     "examples/simple.rb",
     "lib/decisiontree.rb",
     "lib/decisiontree/id3_tree.rb",
+    "tc_decisiontree.gemspec",
     "test/helper.rb",
     "test/test_decisiontree.rb"
   ]
